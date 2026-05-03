@@ -36,6 +36,49 @@ const balanceEl = document.getElementById("balance");
 const paymentAnalytics = document.getElementById("payment-analytics");
 const categoryAnalytics = document.getElementById("category-analytics");
 
+const prevMonthBtn = document.getElementById("prev-month");
+const nextMonthBtn = document.getElementById("next-month");
+const monthTitle = document.getElementById("month-title");
+const monthlyIncomeEl = document.getElementById("monthly-income");
+const monthlyExpensesEl = document.getElementById("monthly-expenses");
+const monthlyBalanceEl = document.getElementById("monthly-balance");
+
+let currentMonthDate = new Date();
+
+// ===============================
+// MONTHLY FILTER FUNCTIONS
+// ===============================
+function renderMonthlyOverview() {
+  const year = currentMonthDate.getFullYear();
+  const month = currentMonthDate.getMonth();
+
+  const monthName = currentMonthDate.toLocaleDateString("de-DE", {
+    month: "long",
+    year: "numeric",
+  });
+
+  monthTitle.textContent = monthName;
+
+  const monthlyEntries = entries.filter((entry) => {
+    const entryDate = new Date(entry.date);
+    return entryDate.getFullYear() === year && entryDate.getMonth() === month;
+  });
+
+  const monthlyIncome = monthlyEntries
+    .filter((entry) => entry.type === "income")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
+
+  const monthlyExpenses = monthlyEntries
+    .filter((entry) => entry.type === "expense")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
+
+  const monthlyBalance = monthlyIncome - monthlyExpenses;
+
+  monthlyIncomeEl.textContent = formatMoney(monthlyIncome);
+  monthlyExpensesEl.textContent = formatMoney(monthlyExpenses);
+  monthlyBalanceEl.textContent = formatMoney(monthlyBalance);
+}
+
 // ===============================
 // SAVE FUNCTIONS
 // ===============================
@@ -242,20 +285,22 @@ function renderCategoryTotals() {
     return;
   }
 
-  const totals = categories.map(category => {
+  const totals = categories.map((category) => {
     const total = entries
-      .filter(entry => entry.category === category.name && entry.type === "expense")
+      .filter(
+        (entry) => entry.category === category.name && entry.type === "expense",
+      )
       .reduce((sum, entry) => sum + Number(entry.amount), 0);
 
     return {
       name: category.name,
-      total: total
+      total: total,
     };
   });
 
-  const maxTotal = Math.max(...totals.map(item => item.total), 1);
+  const maxTotal = Math.max(...totals.map((item) => item.total), 1);
 
-  totals.forEach(item => {
+  totals.forEach((item) => {
     const percent = (item.total / maxTotal) * 100;
 
     const div = document.createElement("div");
@@ -287,6 +332,7 @@ function renderAll() {
   renderTotals();
   renderPaymentTotals();
   renderCategoryTotals();
+  renderMonthlyOverview();
 }
 
 // ===============================
@@ -413,6 +459,15 @@ function editEntry(id) {
 
 filterPayment.addEventListener("change", renderEntries);
 filterType.addEventListener("change", renderEntries);
+prevMonthBtn.addEventListener("click", function () {
+  currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
+  renderMonthlyOverview();
+});
+
+nextMonthBtn.addEventListener("click", function () {
+  currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
+  renderMonthlyOverview();
+});
 
 // ===============================
 // AUTO DATE
