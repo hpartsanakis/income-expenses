@@ -1,171 +1,203 @@
-/* Grundreset */
+/* ===============================
+   GLOBAL RESET
+================================ */
+
 * {
   box-sizing: border-box;
-}
-
-/* Seite */
-body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111827;
-  color: #f9fafb;
+  padding: 0;
 }
 
-/* App Container */
-.app {
-  max-width: 900px;
-  margin: 0 auto;
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3efe7;
+  color: #222;
+  min-height: 100vh;
   padding: 24px;
 }
 
-/* Haupttitel */
-h1 {
+/* ===============================
+   APP LAYOUT
+================================ */
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.app-header {
   text-align: center;
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+.app-header p {
+  color: #666;
+}
+
+/* ===============================
+   CARDS
+================================ */
+
+.card,
+.summary-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
 }
 
-/* Kartenübersicht */
-.summary {
+.card h2 {
+  margin-bottom: 18px;
+}
+
+/* ===============================
+   SUMMARY
+================================ */
+
+.summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   margin-bottom: 24px;
 }
 
-/* Einzelne Summary Card */
-.summary div {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 16px;
-  text-align: center;
+.summary-card h3 {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 10px;
 }
 
-/* Kleine Labels */
-.summary span {
-  display: block;
-  color: #9ca3af;
-  margin-bottom: 8px;
+.summary-card p {
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
-/* Werte */
-.summary strong {
-  font-size: 24px;
+.income p {
+  color: #15803d;
 }
 
-/* Balance Highlight */
-.balance {
-  border: 2px solid #38bdf8;
+.expense p {
+  color: #b91c1c;
 }
 
-/* Karten */
-.form-card,
-.filter-card,
-.category-card,
-.list-card {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 24px;
+.balance p {
+  color: #1d4ed8;
 }
 
-.category-manager-card {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 24px;
+/* ===============================
+   FORMS
+================================ */
+
+.form-row,
+.entry-form,
+.filter-grid {
+  display: grid;
+  gap: 12px;
 }
 
-/* Inputs, Selects, Buttons */
+.form-row {
+  grid-template-columns: 1fr auto;
+}
+
+.entry-form {
+  grid-template-columns: repeat(5, 1fr) auto;
+}
+
+.filter-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 input,
 select,
 button {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: none;
-  font-size: 16px;
-}
-
-/* Input Farbe */
-input,
-select {
-  background: #f9fafb;
-  color: #111827;
-}
-
-/* Hauptbutton */
-button {
-  background: #38bdf8;
-  color: #0f172a;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Button Hover */
-button:hover {
-  background: #0ea5e9;
-}
-
-/* Listen */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* Listeneinträge */
-li {
-  background: #111827;
-  padding: 14px;
+  padding: 12px 14px;
   border-radius: 12px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border: 1px solid #ddd;
+  font-size: 1rem;
 }
 
-/* Einnahmen grün */
-.income {
-  color: #22c55e;
-}
-
-/* Ausgaben rot */
-.expense {
-  color: #ef4444;
-}
-
-/* Delete Button */
-.delete-btn {
-  width: auto;
-  padding: 8px 12px;
-  margin: 0;
-  background: #ef4444;
+button {
+  background: #222;
   color: white;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
 }
 
-/* Delete Hover */
+button:hover {
+  background: #444;
+}
+
+/* ===============================
+   TAGS
+================================ */
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin-top: 16px;
+}
+
+.tag-list li {
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 999px;
+}
+
+/* ===============================
+   ENTRIES
+================================ */
+
+.entries-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.entry-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.entry-income {
+  border-left: 6px solid #15803d;
+}
+
+.entry-expense {
+  border-left: 6px solid #b91c1c;
+}
+
+.delete-btn {
+  background: #b91c1c;
+}
+
 .delete-btn:hover {
-  background: #dc2626;
+  background: #991b1b;
 }
 
-/* Mobile Ansicht */
-@media (max-width: 700px) {
-  .summary {
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 850px) {
+  .summary-grid,
+  .entry-form,
+  .filter-grid,
+  .form-row,
+  .entry-item {
     grid-template-columns: 1fr;
-  }
-
-  .app {
-    padding: 16px;
-  }
-
-  li {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .delete-btn {
-    width: 100%;
   }
 }

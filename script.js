@@ -1,388 +1,37 @@
-// =============================
-// HTML ELEMENTE HOLEN
-// =============================
-
-// Formular: Neuer Eintrag
-const titleInput = document.getElementById("titleInput");
-const amountInput = document.getElementById("amountInput");
-const dateInput = document.getElementById("dateInput");
-const categoryInput = document.getElementById("categoryInput");
-const paymentInput = document.getElementById("paymentInput");
-const typeInput = document.getElementById("typeInput");
-const addBtn = document.getElementById("addBtn");
-
-// Kategorie-Verwaltung
-const newCategoryInput = document.getElementById("newCategoryInput");
-const addCategoryBtn = document.getElementById("addCategoryBtn");
-const savedCategoriesList = document.getElementById("savedCategoriesList");
-
-// Zahlungsmittel-Verwaltung
-const newPaymentInput = document.getElementById("newPaymentInput");
-const addPaymentBtn = document.getElementById("addPaymentBtn");
-const savedPaymentsList = document.getElementById("savedPaymentsList");
-
-// Filter
-const monthFilter = document.getElementById("monthFilter");
-const clearFilterBtn = document.getElementById("clearFilterBtn");
-
-// Listen
-const transactionList = document.getElementById("transactionList");
-const categorySummaryList = document.getElementById("categorySummaryList");
-const paymentSummaryList = document.getElementById("paymentSummaryList");
-
-// Summary oben
-const totalIncomeEl = document.getElementById("totalIncome");
-const totalExpensesEl = document.getElementById("totalExpenses");
-const balanceEl = document.getElementById("balance");
-
-// =============================
-// DATEN LADEN
-// =============================
-
-// Alle Einnahmen/Ausgaben
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
-
-// Alle gespeicherten Kategorien
-let categories = JSON.parse(localStorage.getItem("categories")) || [];
-
-// Alle gespeicherten Zahlungsmittel
-let payments = JSON.parse(localStorage.getItem("payments")) || [];
-
-// =============================
-// SPEICHERN
-// =============================
-
-function saveToLocalStorage() {
-  localStorage.setItem("transactions", JSON.stringify(transactions));
-  localStorage.setItem("categories", JSON.stringify(categories));
-  localStorage.setItem("payments", JSON.stringify(payments));
-}
-
-// =============================
-// GELD FORMATIEREN
-// =============================
-
-function formatMoney(value) {
-  return value.toFixed(2) + " €";
-}
-
-// =============================
-// KATEGORIE SPEICHERN
-// =============================
-
-function addCategory() {
-  const newCategory = newCategoryInput.value.trim();
-
-  if (newCategory === "") {
-    alert("Bitte Kategorie eingeben.");
-    return;
-  }
-
-  if (categories.includes(newCategory)) {
-    alert("Diese Kategorie existiert schon.");
-    newCategoryInput.value = "";
-    return;
-  }
-
-  categories.push(newCategory);
-
-  saveToLocalStorage();
-  renderCategories();
-
-  newCategoryInput.value = "";
-}
-
-// =============================
-// ZAHLUNGSMITTEL SPEICHERN
-// =============================
-
-function addPayment() {
-  const newPayment = newPaymentInput.value.trim();
-
-  if (newPayment === "") {
-    alert("Bitte Zahlungsmittel eingeben.");
-    return;
-  }
-
-  if (payments.includes(newPayment)) {
-    alert("Dieses Zahlungsmittel existiert schon.");
-    newPaymentInput.value = "";
-    return;
-  }
-
-  payments.push(newPayment);
-
-  saveToLocalStorage();
-  renderPayments();
-
-  newPaymentInput.value = "";
-}
-
-// =============================
-// KATEGORIEN ANZEIGEN
-// =============================
-
-function renderCategories() {
-  categoryInput.innerHTML = `
-    <option value="">Kategorie auswählen</option>
-  `;
-
-  savedCategoriesList.innerHTML = "";
-
-  categories.sort().forEach((category) => {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
-    categoryInput.appendChild(option);
-
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <div>
-        <strong>${category}</strong>
-      </div>
-    `;
-
-    savedCategoriesList.appendChild(li);
-  });
-}
-
-// =============================
-// ZAHLUNGSMITTEL ANZEIGEN
-// =============================
-
-function renderPayments() {
-  paymentInput.innerHTML = `
-    <option value="">Zahlungsmittel auswählen</option>
-  `;
-
-  savedPaymentsList.innerHTML = "";
-
-  payments.sort().forEach((payment) => {
-    const option = document.createElement("option");
-    option.value = payment;
-    option.textContent = payment;
-    paymentInput.appendChild(option);
-
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <div>
-        <strong>${payment}</strong>
-      </div>
-    `;
-
-    savedPaymentsList.appendChild(li);
-  });
-}
-
-// =============================
-// EINTRAG SPEICHERN
-// =============================
-
-function addTransaction() {
-  const title = titleInput.value.trim();
-  const amount = Number(amountInput.value);
-  const date = dateInput.value;
-  const category = categoryInput.value;
-  const payment = paymentInput.value;
-  const type = typeInput.value;
-
-  if (
-    title === "" ||
-    amount <= 0 ||
-    date === "" ||
-    category === "" ||
-    payment === ""
-  ) {
-    alert("Bitte Name, Betrag, Datum, Kategorie und Zahlungsmittel eingeben.");
-    return;
-  }
-
-  const transaction = {
-    id: Date.now(),
-    title: title,
-    amount: amount,
-    date: date,
-    category: category,
-    payment: payment,
-    type: type,
-  };
-
-  transactions.push(transaction);
-
-  saveToLocalStorage();
-  renderTransactions();
-
-  titleInput.value = "";
-  amountInput.value = "";
-  dateInput.value = "";
-  categoryInput.value = "";
-  paymentInput.value = "";
-  typeInput.value = "income";
-}
-
-// =============================
-// EINTRAG LÖSCHEN
-// =============================
-
-function deleteTransaction(id) {
-  transactions = transactions.filter((transaction) => transaction.id !== id);
-
-  saveToLocalStorage();
-  renderTransactions();
-}
-
-// =============================
-// EINTRÄGE UND SUMMEN ANZEIGEN
-// =============================
-
-function renderTransactions() {
-  transactionList.innerHTML = "";
-  categorySummaryList.innerHTML = "";
-  paymentSummaryList.innerHTML = "";
-
-  let totalIncome = 0;
-  let totalExpenses = 0;
-
-  const selectedMonth = monthFilter.value;
-
-  let filteredTransactions = transactions;
-
-  if (selectedMonth !== "") {
-    filteredTransactions = transactions.filter((transaction) => {
-      return transaction.date.startsWith(selectedMonth);
-    });
-  }
-
-  const categoryTotals = {};
-  const paymentTotals = {};
-
-  filteredTransactions.forEach((transaction) => {
-    // Gesamtwerte berechnen
-    if (transaction.type === "income") {
-      totalIncome += transaction.amount;
-    } else {
-      totalExpenses += transaction.amount;
-    }
-
-    // Kategorie vorbereiten
-    if (!categoryTotals[transaction.category]) {
-      categoryTotals[transaction.category] = {
-        income: 0,
-        expense: 0,
-        total: 0,
-      };
-    }
-
-    // Zahlungsmittel vorbereiten
-    if (!paymentTotals[transaction.payment]) {
-      paymentTotals[transaction.payment] = {
-        income: 0,
-        expense: 0,
-        total: 0,
-      };
-    }
-
-    // Kategorie + Zahlungsmittel berechnen
-    if (transaction.type === "income") {
-      categoryTotals[transaction.category].income += transaction.amount;
-      categoryTotals[transaction.category].total += transaction.amount;
-
-      paymentTotals[transaction.payment].income += transaction.amount;
-      paymentTotals[transaction.payment].total += transaction.amount;
-    } else {
-      categoryTotals[transaction.category].expense += transaction.amount;
-      categoryTotals[transaction.category].total -= transaction.amount;
-
-      paymentTotals[transaction.payment].expense += transaction.amount;
-      paymentTotals[transaction.payment].total -= transaction.amount;
-    }
-
-    // Eintrag anzeigen
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <div>
-        <strong>${transaction.title}</strong><br>
-        <small>
-          ${transaction.category} • ${transaction.payment} • ${transaction.date}
-        </small><br>
-        <span class="${transaction.type}">
-          ${transaction.type === "income" ? "+" : "-"} ${formatMoney(transaction.amount)}
-        </span>
-      </div>
-
-      <button class="delete-btn" onclick="deleteTransaction(${transaction.id})">
-        Löschen
-      </button>
-    `;
-
-    transactionList.appendChild(li);
-  });
-
-  // Summary oben aktualisieren
-  const balance = totalIncome - totalExpenses;
-
-  totalIncomeEl.textContent = formatMoney(totalIncome);
-  totalExpensesEl.textContent = formatMoney(totalExpenses);
-  balanceEl.textContent = formatMoney(balance);
-
-  // Kategorie-Auswertung anzeigen
-  Object.keys(categoryTotals)
-    .sort()
-    .forEach((category) => {
-      const income = categoryTotals[category].income;
-      const expense = categoryTotals[category].expense;
-      const total = categoryTotals[category].total;
-
-      const li = document.createElement("li");
-
-      li.innerHTML = `
-      <div>
-        <strong>${category}</strong><br>
-        <small>
-          Einnahmen: ${formatMoney(income)} |
-          Ausgaben: ${formatMoney(expense)} |
-          Gesamt: ${formatMoney(total)}
-        </small>
-      </div>
-    `;
-
-      categorySummaryList.appendChild(li);
-    });
-
-  // Zahlungsmittel-Auswertung anzeigen
-  Object.keys(paymentTotals)
-    .sort()
-    .forEach((payment) => {
-      const income = paymentTotals[payment].income;
-      const expense = paymentTotals[payment].expense;
-      const total = paymentTotals[payment].total;
-
-      const li = document.createElement("li");
-
-      li.innerHTML = `
-      <div>
-        <strong>${payment}</strong><br>
-        <small>
-          Einnahmen: ${formatMoney(income)} |
-          Ausgaben: ${formatMoney(expense)} |
-          Gesamt: ${formatMoney(total)}
-        </small>
-      </div>
-    `;
-
-      paymentSummaryList.appendChild(li);
-    });
-}
-
 // ===============================
-// DATA STORAGE (localStorage)
+// LOCAL STORAGE DATA
 // ===============================
 
 let categories = JSON.parse(localStorage.getItem("categories")) || [];
+let paymentMethods = JSON.parse(localStorage.getItem("paymentMethods")) || [];
 let entries = JSON.parse(localStorage.getItem("entries")) || [];
+
+// ===============================
+// DOM ELEMENTS
+// ===============================
+
+const categoryForm = document.getElementById("category-form");
+const categoryInput = document.getElementById("category-input");
+const categoryList = document.getElementById("category-list");
+const categorySelect = document.getElementById("category-select");
+
+const paymentForm = document.getElementById("payment-form");
+const paymentInput = document.getElementById("payment-input");
+const paymentList = document.getElementById("payment-list");
+const paymentSelect = document.getElementById("payment-select");
+const filterPayment = document.getElementById("filter-payment");
+
+const entryForm = document.getElementById("entry-form");
+const amountInput = document.getElementById("amount-input");
+const typeInput = document.getElementById("type-input");
+const dateInput = document.getElementById("date-input");
+
+const filterType = document.getElementById("filter-type");
+const entriesList = document.getElementById("entries-list");
+
+const totalIncomeEl = document.getElementById("total-income");
+const totalExpensesEl = document.getElementById("total-expenses");
+const balanceEl = document.getElementById("balance");
 
 // ===============================
 // SAVE FUNCTIONS
@@ -392,69 +41,236 @@ function saveCategories() {
   localStorage.setItem("categories", JSON.stringify(categories));
 }
 
+function savePaymentMethods() {
+  localStorage.setItem("paymentMethods", JSON.stringify(paymentMethods));
+}
+
 function saveEntries() {
   localStorage.setItem("entries", JSON.stringify(entries));
 }
 
-// Example Category
-{
-  id: Date.now(),
-  name: "Food"
+// ===============================
+// FORMAT MONEY
+// ===============================
+
+function formatMoney(value) {
+  return value.toFixed(2) + " €";
 }
 
-// Example Entry
-{
-  id: Date.now(),
-  amount: 50,
-  type: "expense", // or "income"
-  category: "Food",
-  payment: "Cash", // or Card
-  date: "2026-05-03"
-}
+// ===============================
+// RENDER CATEGORIES
+// ===============================
 
-function renderEntries() {
-  const list = document.getElementById("entries-list");
-  list.innerHTML = "";
+function renderCategories() {
+  categoryList.innerHTML = "";
+  categorySelect.innerHTML = '<option value="">Kategorie auswählen</option>';
 
-  entries.forEach(entry => {
+  categories.forEach(category => {
     const li = document.createElement("li");
+    li.textContent = category.name;
+    categoryList.appendChild(li);
 
-    li.textContent = `
-      ${entry.date} | ${entry.category} | ${entry.payment} | ${entry.amount}€
-    `;
-
-    if (entry.type === "expense") {
-      li.style.color = "red";
-    } else {
-      li.style.color = "green";
-    }
-
-    list.appendChild(li);
+    const option = document.createElement("option");
+    option.value = category.name;
+    option.textContent = category.name;
+    categorySelect.appendChild(option);
   });
 }
 
-// =============================
-// EVENTS
-// =============================
+// ===============================
+// RENDER PAYMENT METHODS
+// ===============================
 
-addCategoryBtn.addEventListener("click", addCategory);
+function renderPaymentMethods() {
+  paymentList.innerHTML = "";
+  paymentSelect.innerHTML = '<option value="">Zahlungsmittel auswählen</option>';
+  filterPayment.innerHTML = '<option value="all">Alle Zahlungsmittel</option>';
 
-addPaymentBtn.addEventListener("click", addPayment);
+  paymentMethods.forEach(payment => {
+    const li = document.createElement("li");
+    li.textContent = payment.name;
+    paymentList.appendChild(li);
 
-addBtn.addEventListener("click", addTransaction);
+    const option = document.createElement("option");
+    option.value = payment.name;
+    option.textContent = payment.name;
+    paymentSelect.appendChild(option);
 
-monthFilter.addEventListener("change", renderTransactions);
+    const filterOption = document.createElement("option");
+    filterOption.value = payment.name;
+    filterOption.textContent = payment.name;
+    filterPayment.appendChild(filterOption);
+  });
+}
 
-clearFilterBtn.addEventListener("click", () => {
-  monthFilter.value = "";
-  renderTransactions();
+// ===============================
+// RENDER ENTRIES
+// ===============================
+
+function renderEntries() {
+  entriesList.innerHTML = "";
+
+  const selectedPayment = filterPayment.value;
+  const selectedType = filterType.value;
+
+  let filteredEntries = entries;
+
+  if (selectedPayment !== "all") {
+    filteredEntries = filteredEntries.filter(entry => entry.payment === selectedPayment);
+  }
+
+  if (selectedType !== "all") {
+    filteredEntries = filteredEntries.filter(entry => entry.type === selectedType);
+  }
+
+  if (filteredEntries.length === 0) {
+    entriesList.innerHTML = "<li>Keine Einträge vorhanden.</li>";
+    return;
+  }
+
+  filteredEntries.forEach(entry => {
+    const li = document.createElement("li");
+
+    li.className =
+      entry.type === "income"
+        ? "entry-item entry-income"
+        : "entry-item entry-expense";
+
+    li.innerHTML = `
+      <span>${entry.date}</span>
+      <span>${entry.category}</span>
+      <span>${entry.payment}</span>
+      <strong>${entry.type === "income" ? "+" : "-"} ${formatMoney(entry.amount)}</strong>
+      <button class="delete-btn" onclick="deleteEntry(${entry.id})">Löschen</button>
+    `;
+
+    entriesList.appendChild(li);
+  });
+}
+
+// ===============================
+// RENDER TOTALS
+// ===============================
+
+function renderTotals() {
+  const income = entries
+    .filter(entry => entry.type === "income")
+    .reduce((sum, entry) => sum + entry.amount, 0);
+
+  const expenses = entries
+    .filter(entry => entry.type === "expense")
+    .reduce((sum, entry) => sum + entry.amount, 0);
+
+  const balance = income - expenses;
+
+  totalIncomeEl.textContent = formatMoney(income);
+  totalExpensesEl.textContent = formatMoney(expenses);
+  balanceEl.textContent = formatMoney(balance);
+}
+
+// ===============================
+// ADD CATEGORY
+// ===============================
+
+categoryForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const categoryName = categoryInput.value.trim();
+
+  if (categoryName === "") return;
+
+  const newCategory = {
+    id: Date.now(),
+    name: categoryName
+  };
+
+  categories.push(newCategory);
+  saveCategories();
+  renderCategories();
+
+  categoryInput.value = "";
 });
 
-// =============================
-// APP STARTEN
-// =============================
+// ===============================
+// ADD PAYMENT METHOD
+// ===============================
+
+paymentForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const paymentName = paymentInput.value.trim();
+
+  if (paymentName === "") return;
+
+  const newPaymentMethod = {
+    id: Date.now(),
+    name: paymentName
+  };
+
+  paymentMethods.push(newPaymentMethod);
+  savePaymentMethods();
+  renderPaymentMethods();
+
+  paymentInput.value = "";
+});
+
+// ===============================
+// ADD ENTRY
+// ===============================
+
+entryForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const amount = Number(amountInput.value);
+  const type = typeInput.value;
+  const category = categorySelect.value;
+  const payment = paymentSelect.value;
+  const date = dateInput.value;
+
+  if (!amount || !category || !payment || !date) return;
+
+  const newEntry = {
+    id: Date.now(),
+    amount: amount,
+    type: type,
+    category: category,
+    payment: payment,
+    date: date
+  };
+
+  entries.push(newEntry);
+  saveEntries();
+
+  renderEntries();
+  renderTotals();
+
+  entryForm.reset();
+});
+
+// ===============================
+// DELETE ENTRY
+// ===============================
+
+function deleteEntry(id) {
+  entries = entries.filter(entry => entry.id !== id);
+
+  saveEntries();
+  renderEntries();
+  renderTotals();
+}
+
+// ===============================
+// FILTER EVENTS
+// ===============================
+
+filterPayment.addEventListener("change", renderEntries);
+filterType.addEventListener("change", renderEntries);
+
+// ===============================
+// INITIAL APP LOAD
+// ===============================
 
 renderCategories();
-renderPayments();
-renderTransactions();
+renderPaymentMethods();
 renderEntries();
+renderTotals();
