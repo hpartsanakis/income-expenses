@@ -33,6 +33,9 @@ const totalIncomeEl = document.getElementById("total-income");
 const totalExpensesEl = document.getElementById("total-expenses");
 const balanceEl = document.getElementById("balance");
 
+const paymentAnalytics = document.getElementById("payment-analytics");
+const categoryAnalytics = document.getElementById("category-analytics");
+
 // ===============================
 // SAVE FUNCTIONS
 // ===============================
@@ -182,20 +185,48 @@ function renderTotals() {
 // ===============================
 
 function renderPaymentTotals() {
-  console.log("---- Payment Totals ----");
+  paymentAnalytics.innerHTML = "";
 
-  paymentMethods.forEach((method) => {
+  if (paymentMethods.length === 0) {
+    paymentAnalytics.innerHTML = "<p>Keine Zahlungsmittel vorhanden.</p>";
+    return;
+  }
+
+  const totals = paymentMethods.map((method) => {
     const total = entries
       .filter((entry) => entry.payment === method.name)
       .reduce((sum, entry) => {
-        if (entry.type === "income") {
-          return sum + Number(entry.amount);
-        } else {
-          return sum - Number(entry.amount);
-        }
+        return entry.type === "income"
+          ? sum + Number(entry.amount)
+          : sum - Number(entry.amount);
       }, 0);
 
-    console.log(method.name + ": " + formatMoney(total));
+    return {
+      name: method.name,
+      total: total,
+    };
+  });
+
+  const maxTotal = Math.max(...totals.map((item) => Math.abs(item.total)), 1);
+
+  totals.forEach((item) => {
+    const percent = (Math.abs(item.total) / maxTotal) * 100;
+
+    const div = document.createElement("div");
+    div.className = "analytics-item";
+
+    div.innerHTML = `
+      <div class="analytics-row">
+        <span>${item.name}</span>
+        <span>${formatMoney(item.total)}</span>
+      </div>
+
+      <div class="analytics-bar">
+        <div class="analytics-fill" style="width: ${percent}%"></div>
+      </div>
+    `;
+
+    paymentAnalytics.appendChild(div);
   });
 }
 
@@ -204,16 +235,44 @@ function renderPaymentTotals() {
 // ===============================
 
 function renderCategoryTotals() {
-  console.log("---- Category Totals ----");
+  categoryAnalytics.innerHTML = "";
 
-  categories.forEach((category) => {
+  if (categories.length === 0) {
+    categoryAnalytics.innerHTML = "<p>Keine Kategorien vorhanden.</p>";
+    return;
+  }
+
+  const totals = categories.map(category => {
     const total = entries
-      .filter(
-        (entry) => entry.category === category.name && entry.type === "expense",
-      )
+      .filter(entry => entry.category === category.name && entry.type === "expense")
       .reduce((sum, entry) => sum + Number(entry.amount), 0);
 
-    console.log(category.name + ": " + formatMoney(total));
+    return {
+      name: category.name,
+      total: total
+    };
+  });
+
+  const maxTotal = Math.max(...totals.map(item => item.total), 1);
+
+  totals.forEach(item => {
+    const percent = (item.total / maxTotal) * 100;
+
+    const div = document.createElement("div");
+    div.className = "analytics-item";
+
+    div.innerHTML = `
+      <div class="analytics-row">
+        <span>${item.name}</span>
+        <span>${formatMoney(item.total)}</span>
+      </div>
+
+      <div class="analytics-bar">
+        <div class="analytics-fill" style="width: ${percent}%"></div>
+      </div>
+    `;
+
+    categoryAnalytics.appendChild(div);
   });
 }
 

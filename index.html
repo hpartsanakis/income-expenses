@@ -1,132 +1,145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Income & Expenses App</title>
+    <title>Income & Expenses App</title>
 
-  <link rel="stylesheet" href="style.css" />
-</head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
-  <div class="app">
-    <header class="app-header">
-      <h1>Income & Expenses App</h1>
-      <p>Verwalte Einnahmen, Ausgaben, Kategorien und Zahlungsmittel.</p>
-    </header>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <h1>Income & Expenses App</h1>
+        <p>Verwalte Einnahmen, Ausgaben, Kategorien und Zahlungsmittel.</p>
+      </header>
 
-    <!-- SUMMARY CARDS -->
-    <section class="summary-grid">
-      <div class="summary-card income">
-        <h3>Einnahmen</h3>
-        <p id="total-income">0.00 €</p>
-      </div>
+      <!-- SUMMARY CARDS -->
+      <section class="summary-grid">
+        <div class="summary-card income">
+          <h3>Einnahmen</h3>
+          <p id="total-income">0.00 €</p>
+        </div>
 
-      <div class="summary-card expense">
-        <h3>Ausgaben</h3>
-        <p id="total-expenses">0.00 €</p>
-      </div>
+        <div class="summary-card expense">
+          <h3>Ausgaben</h3>
+          <p id="total-expenses">0.00 €</p>
+        </div>
 
-      <div class="summary-card balance">
-        <h3>Balance</h3>
-        <p id="balance">0.00 €</p>
-      </div>
-    </section>
+        <div class="summary-card balance">
+          <h3>Balance</h3>
+          <p id="balance">0.00 €</p>
+        </div>
+      </section>
 
-    <!-- CATEGORY MANAGEMENT -->
-    <section class="card">
-      <h2>Kategorien Verwaltung</h2>
+      <!-- CATEGORY MANAGEMENT -->
+      <section class="card">
+        <h2>Kategorien Verwaltung</h2>
 
-      <form id="category-form" class="form-row">
-        <input
-          type="text"
-          id="category-input"
-          placeholder="Neue Kategorie eingeben"
-          required
-        />
+        <form id="category-form" class="form-row">
+          <input
+            type="text"
+            id="category-input"
+            placeholder="Neue Kategorie eingeben"
+            required
+          />
 
-        <button type="submit">Kategorie speichern</button>
-      </form>
+          <button type="submit">Kategorie speichern</button>
+        </form>
 
-      <ul id="category-list" class="tag-list"></ul>
-    </section>
+        <ul id="category-list" class="tag-list"></ul>
+      </section>
 
-    <!-- PAYMENT METHOD MANAGEMENT -->
-    <section class="card">
-      <h2>Zahlungsmittel Verwaltung</h2>
+      <!-- PAYMENT METHOD MANAGEMENT -->
+      <section class="card">
+        <h2>Zahlungsmittel Verwaltung</h2>
 
-      <form id="payment-form" class="form-row">
-        <input
-          type="text"
-          id="payment-input"
-          placeholder="z.B. Bar, Karte, PayPal, Überweisung"
-          required
-        />
+        <form id="payment-form" class="form-row">
+          <input
+            type="text"
+            id="payment-input"
+            placeholder="z.B. Bar, Karte, PayPal, Überweisung"
+            required
+          />
 
-        <button type="submit">Zahlungsmittel speichern</button>
-      </form>
+          <button type="submit">Zahlungsmittel speichern</button>
+        </form>
 
-      <ul id="payment-list" class="tag-list"></ul>
-    </section>
+        <ul id="payment-list" class="tag-list"></ul>
+      </section>
 
-    <!-- NEW ENTRY -->
-    <section class="card">
-      <h2>Neuer Eintrag</h2>
+      <!-- NEW ENTRY -->
+      <section class="card">
+        <h2>Neuer Eintrag</h2>
 
-      <form id="entry-form" class="entry-form">
-        <input
-          type="number"
-          id="amount-input"
-          placeholder="Betrag"
-          step="0.01"
-          required
-        />
+        <form id="entry-form" class="entry-form">
+          <input
+            type="number"
+            id="amount-input"
+            placeholder="Betrag"
+            step="0.01"
+            required
+          />
 
-        <select id="type-input" required>
-          <option value="income">Einnahme</option>
-          <option value="expense">Ausgabe</option>
-        </select>
+          <select id="type-input" required>
+            <option value="income">Einnahme</option>
+            <option value="expense">Ausgabe</option>
+          </select>
 
-        <select id="category-select" required>
-          <option value="">Kategorie auswählen</option>
-        </select>
+          <select id="category-select" required>
+            <option value="">Kategorie auswählen</option>
+          </select>
 
-        <select id="payment-select" required>
-          <option value="">Zahlungsmittel auswählen</option>
-        </select>
+          <select id="payment-select" required>
+            <option value="">Zahlungsmittel auswählen</option>
+          </select>
 
-        <input type="date" id="date-input" required />
+          <input type="date" id="date-input" required />
 
-        <button type="submit">Eintrag speichern</button>
-      </form>
-    </section>
+          <button type="submit">Eintrag speichern</button>
+        </form>
+      </section>
 
-    <!-- FILTER -->
-    <section class="card">
-      <h2>Auswertung</h2>
+      <!-- FILTER -->
+      <section class="card">
+        <h2>Auswertung</h2>
 
-      <div class="filter-grid">
-        <select id="filter-payment">
-          <option value="all">Alle Zahlungsmittel</option>
-        </select>
+        <div class="filter-grid">
+          <select id="filter-payment">
+            <option value="all">Alle Zahlungsmittel</option>
+          </select>
 
-        <select id="filter-type">
-          <option value="all">Alle Typen</option>
-          <option value="income">Nur Einnahmen</option>
-          <option value="expense">Nur Ausgaben</option>
-        </select>
-      </div>
-    </section>
+          <select id="filter-type">
+            <option value="all">Alle Typen</option>
+            <option value="income">Nur Einnahmen</option>
+            <option value="expense">Nur Ausgaben</option>
+          </select>
+        </div>
+      </section>
 
-    <!-- ENTRIES -->
-    <section class="card">
-      <h2>Einträge</h2>
+      <!-- ANALYSIS -->
+      <section class="analytics-grid">
+        <div class="card">
+          <h2>Auswertung nach Zahlungsmittel</h2>
+          <div id="payment-analytics" class="analytics-list"></div>
+        </div>
 
-      <ul id="entries-list" class="entries-list"></ul>
-    </section>
-  </div>
+        <div class="card">
+          <h2>Ausgaben nach Kategorie</h2>
+          <div id="category-analytics" class="analytics-list"></div>
+        </div>
+      </section>
 
-  <script src="script.js"></script>
-</body>
+      <!-- ENTRIES -->
+      <section class="card">
+        <h2>Einträge</h2>
+
+        <ul id="entries-list" class="entries-list"></ul>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
