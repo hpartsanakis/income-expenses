@@ -129,7 +129,7 @@ function renderCategories() {
 
   savedCategoriesList.innerHTML = "";
 
-  categories.sort().forEach(category => {
+  categories.sort().forEach((category) => {
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
@@ -158,7 +158,7 @@ function renderPayments() {
 
   savedPaymentsList.innerHTML = "";
 
-  payments.sort().forEach(payment => {
+  payments.sort().forEach((payment) => {
     const option = document.createElement("option");
     option.value = payment;
     option.textContent = payment;
@@ -206,7 +206,7 @@ function addTransaction() {
     date: date,
     category: category,
     payment: payment,
-    type: type
+    type: type,
   };
 
   transactions.push(transaction);
@@ -227,7 +227,7 @@ function addTransaction() {
 // =============================
 
 function deleteTransaction(id) {
-  transactions = transactions.filter(transaction => transaction.id !== id);
+  transactions = transactions.filter((transaction) => transaction.id !== id);
 
   saveToLocalStorage();
   renderTransactions();
@@ -250,7 +250,7 @@ function renderTransactions() {
   let filteredTransactions = transactions;
 
   if (selectedMonth !== "") {
-    filteredTransactions = transactions.filter(transaction => {
+    filteredTransactions = transactions.filter((transaction) => {
       return transaction.date.startsWith(selectedMonth);
     });
   }
@@ -258,7 +258,7 @@ function renderTransactions() {
   const categoryTotals = {};
   const paymentTotals = {};
 
-  filteredTransactions.forEach(transaction => {
+  filteredTransactions.forEach((transaction) => {
     // Gesamtwerte berechnen
     if (transaction.type === "income") {
       totalIncome += transaction.amount;
@@ -271,7 +271,7 @@ function renderTransactions() {
       categoryTotals[transaction.category] = {
         income: 0,
         expense: 0,
-        total: 0
+        total: 0,
       };
     }
 
@@ -280,7 +280,7 @@ function renderTransactions() {
       paymentTotals[transaction.payment] = {
         income: 0,
         expense: 0,
-        total: 0
+        total: 0,
       };
     }
 
@@ -329,14 +329,16 @@ function renderTransactions() {
   balanceEl.textContent = formatMoney(balance);
 
   // Kategorie-Auswertung anzeigen
-  Object.keys(categoryTotals).sort().forEach(category => {
-    const income = categoryTotals[category].income;
-    const expense = categoryTotals[category].expense;
-    const total = categoryTotals[category].total;
+  Object.keys(categoryTotals)
+    .sort()
+    .forEach((category) => {
+      const income = categoryTotals[category].income;
+      const expense = categoryTotals[category].expense;
+      const total = categoryTotals[category].total;
 
-    const li = document.createElement("li");
+      const li = document.createElement("li");
 
-    li.innerHTML = `
+      li.innerHTML = `
       <div>
         <strong>${category}</strong><br>
         <small>
@@ -347,18 +349,20 @@ function renderTransactions() {
       </div>
     `;
 
-    categorySummaryList.appendChild(li);
-  });
+      categorySummaryList.appendChild(li);
+    });
 
   // Zahlungsmittel-Auswertung anzeigen
-  Object.keys(paymentTotals).sort().forEach(payment => {
-    const income = paymentTotals[payment].income;
-    const expense = paymentTotals[payment].expense;
-    const total = paymentTotals[payment].total;
+  Object.keys(paymentTotals)
+    .sort()
+    .forEach((payment) => {
+      const income = paymentTotals[payment].income;
+      const expense = paymentTotals[payment].expense;
+      const total = paymentTotals[payment].total;
 
-    const li = document.createElement("li");
+      const li = document.createElement("li");
 
-    li.innerHTML = `
+      li.innerHTML = `
       <div>
         <strong>${payment}</strong><br>
         <small>
@@ -369,7 +373,63 @@ function renderTransactions() {
       </div>
     `;
 
-    paymentSummaryList.appendChild(li);
+      paymentSummaryList.appendChild(li);
+    });
+}
+
+// ===============================
+// DATA STORAGE (localStorage)
+// ===============================
+
+let categories = JSON.parse(localStorage.getItem("categories")) || [];
+let entries = JSON.parse(localStorage.getItem("entries")) || [];
+
+// ===============================
+// SAVE FUNCTIONS
+// ===============================
+
+function saveCategories() {
+  localStorage.setItem("categories", JSON.stringify(categories));
+}
+
+function saveEntries() {
+  localStorage.setItem("entries", JSON.stringify(entries));
+}
+
+// Example Category
+{
+  id: Date.now(),
+  name: "Food"
+}
+
+// Example Entry
+{
+  id: Date.now(),
+  amount: 50,
+  type: "expense", // or "income"
+  category: "Food",
+  payment: "Cash", // or Card
+  date: "2026-05-03"
+}
+
+function renderEntries() {
+  const list = document.getElementById("entries-list");
+  list.innerHTML = "";
+
+  entries.forEach(entry => {
+    const li = document.createElement("li");
+
+    li.textContent = `
+      ${entry.date} | ${entry.category} | ${entry.payment} | ${entry.amount}€
+    `;
+
+    if (entry.type === "expense") {
+      li.style.color = "red";
+    } else {
+      li.style.color = "green";
+    }
+
+    list.appendChild(li);
   });
 }
 
@@ -397,3 +457,4 @@ clearFilterBtn.addEventListener("click", () => {
 renderCategories();
 renderPayments();
 renderTransactions();
+renderEntries();
