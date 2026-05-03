@@ -54,7 +54,7 @@ function saveEntries() {
 // ===============================
 
 function formatMoney(value) {
-  return value.toFixed(2) + " €";
+  return Number(value).toFixed(2) + " €";
 }
 
 // ===============================
@@ -65,7 +65,7 @@ function renderCategories() {
   categoryList.innerHTML = "";
   categorySelect.innerHTML = '<option value="">Kategorie auswählen</option>';
 
-  categories.forEach(category => {
+  categories.forEach((category) => {
     const li = document.createElement("li");
     li.textContent = category.name;
     categoryList.appendChild(li);
@@ -83,10 +83,11 @@ function renderCategories() {
 
 function renderPaymentMethods() {
   paymentList.innerHTML = "";
-  paymentSelect.innerHTML = '<option value="">Zahlungsmittel auswählen</option>';
+  paymentSelect.innerHTML =
+    '<option value="">Zahlungsmittel auswählen</option>';
   filterPayment.innerHTML = '<option value="all">Alle Zahlungsmittel</option>';
 
-  paymentMethods.forEach(payment => {
+  paymentMethods.forEach((payment) => {
     const li = document.createElement("li");
     li.textContent = payment.name;
     paymentList.appendChild(li);
@@ -116,11 +117,15 @@ function renderEntries() {
   let filteredEntries = entries;
 
   if (selectedPayment !== "all") {
-    filteredEntries = filteredEntries.filter(entry => entry.payment === selectedPayment);
+    filteredEntries = filteredEntries.filter(
+      (entry) => entry.payment === selectedPayment,
+    );
   }
 
   if (selectedType !== "all") {
-    filteredEntries = filteredEntries.filter(entry => entry.type === selectedType);
+    filteredEntries = filteredEntries.filter(
+      (entry) => entry.type === selectedType,
+    );
   }
 
   if (filteredEntries.length === 0) {
@@ -128,7 +133,7 @@ function renderEntries() {
     return;
   }
 
-  filteredEntries.forEach(entry => {
+  filteredEntries.forEach((entry) => {
     const li = document.createElement("li");
 
     li.className =
@@ -141,7 +146,11 @@ function renderEntries() {
       <span>${entry.category}</span>
       <span>${entry.payment}</span>
       <strong>${entry.type === "income" ? "+" : "-"} ${formatMoney(entry.amount)}</strong>
-      <button class="delete-btn" onclick="deleteEntry(${entry.id})">Löschen</button>
+
+      <div>
+        <button onclick="editEntry(${entry.id})">✏️</button>
+        <button class="delete-btn" onclick="deleteEntry(${entry.id})">🗑</button>
+      </div>
     `;
 
     entriesList.appendChild(li);
@@ -154,18 +163,71 @@ function renderEntries() {
 
 function renderTotals() {
   const income = entries
-    .filter(entry => entry.type === "income")
-    .reduce((sum, entry) => sum + entry.amount, 0);
+    .filter((entry) => entry.type === "income")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
 
   const expenses = entries
-    .filter(entry => entry.type === "expense")
-    .reduce((sum, entry) => sum + entry.amount, 0);
+    .filter((entry) => entry.type === "expense")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
 
   const balance = income - expenses;
 
   totalIncomeEl.textContent = formatMoney(income);
   totalExpensesEl.textContent = formatMoney(expenses);
   balanceEl.textContent = formatMoney(balance);
+}
+
+// ===============================
+// PAYMENT TOTALS
+// ===============================
+
+function renderPaymentTotals() {
+  console.log("---- Payment Totals ----");
+
+  paymentMethods.forEach((method) => {
+    const total = entries
+      .filter((entry) => entry.payment === method.name)
+      .reduce((sum, entry) => {
+        if (entry.type === "income") {
+          return sum + Number(entry.amount);
+        } else {
+          return sum - Number(entry.amount);
+        }
+      }, 0);
+
+    console.log(method.name + ": " + formatMoney(total));
+  });
+}
+
+// ===============================
+// CATEGORY TOTALS
+// ===============================
+
+function renderCategoryTotals() {
+  console.log("---- Category Totals ----");
+
+  categories.forEach((category) => {
+    const total = entries
+      .filter(
+        (entry) => entry.category === category.name && entry.type === "expense",
+      )
+      .reduce((sum, entry) => sum + Number(entry.amount), 0);
+
+    console.log(category.name + ": " + formatMoney(total));
+  });
+}
+
+// ===============================
+// RENDER ALL
+// ===============================
+
+function renderAll() {
+  renderCategories();
+  renderPaymentMethods();
+  renderEntries();
+  renderTotals();
+  renderPaymentTotals();
+  renderCategoryTotals();
 }
 
 // ===============================
@@ -181,14 +243,15 @@ categoryForm.addEventListener("submit", function (event) {
 
   const newCategory = {
     id: Date.now(),
-    name: categoryName
+    name: categoryName,
   };
 
   categories.push(newCategory);
   saveCategories();
-  renderCategories();
 
   categoryInput.value = "";
+
+  renderAll();
 });
 
 // ===============================
@@ -204,14 +267,15 @@ paymentForm.addEventListener("submit", function (event) {
 
   const newPaymentMethod = {
     id: Date.now(),
-    name: paymentName
+    name: paymentName,
   };
 
   paymentMethods.push(newPaymentMethod);
   savePaymentMethods();
-  renderPaymentMethods();
 
   paymentInput.value = "";
+
+  renderAll();
 });
 
 // ===============================
@@ -235,16 +299,16 @@ entryForm.addEventListener("submit", function (event) {
     type: type,
     category: category,
     payment: payment,
-    date: date
+    date: date,
   };
 
   entries.push(newEntry);
   saveEntries();
 
-  renderEntries();
-  renderTotals();
-
   entryForm.reset();
+  setTodayDate();
+
+  renderAll();
 });
 
 // ===============================
@@ -252,11 +316,36 @@ entryForm.addEventListener("submit", function (event) {
 // ===============================
 
 function deleteEntry(id) {
-  entries = entries.filter(entry => entry.id !== id);
+  entries = entries.filter((entry) => entry.id !== id);
 
   saveEntries();
-  renderEntries();
-  renderTotals();
+  renderAll();
+}
+
+// ===============================
+// EDIT ENTRY
+// ===============================
+
+function editEntry(id) {
+  const entry = entries.find((entry) => entry.id === id);
+
+  if (!entry) return;
+
+  amountInput.value = entry.amount;
+  typeInput.value = entry.type;
+  categorySelect.value = entry.category;
+  paymentSelect.value = entry.payment;
+  dateInput.value = entry.date;
+
+  entries = entries.filter((entry) => entry.id !== id);
+
+  saveEntries();
+  renderAll();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 }
 
 // ===============================
@@ -267,10 +356,16 @@ filterPayment.addEventListener("change", renderEntries);
 filterType.addEventListener("change", renderEntries);
 
 // ===============================
+// AUTO DATE
+// ===============================
+
+function setTodayDate() {
+  dateInput.value = new Date().toISOString().split("T")[0];
+}
+
+// ===============================
 // INITIAL APP LOAD
 // ===============================
 
-renderCategories();
-renderPaymentMethods();
-renderEntries();
-renderTotals();
+setTodayDate();
+renderAll();
