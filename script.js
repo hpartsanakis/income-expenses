@@ -43,6 +43,8 @@ const monthlyIncomeEl = document.getElementById("monthly-income");
 const monthlyExpensesEl = document.getElementById("monthly-expenses");
 const monthlyBalanceEl = document.getElementById("monthly-balance");
 
+const exportCsvBtn = document.getElementById("export-csv");
+
 let currentMonthDate = new Date();
 
 // ===============================
@@ -469,12 +471,63 @@ nextMonthBtn.addEventListener("click", function () {
   renderMonthlyOverview();
 });
 
+exportCsvBtn.addEventListener("click", exportCSV);
 // ===============================
 // AUTO DATE
 // ===============================
 
 function setTodayDate() {
   dateInput.value = new Date().toISOString().split("T")[0];
+}
+
+// ===============================
+// EXPORT CSV
+// ===============================
+function exportCSV() {
+  if (entries.length === 0) {
+    alert("Keine Einträge zum Exportieren.");
+    return;
+  }
+
+  const header = [
+    "Date",
+    "Type",
+    "Category",
+    "Payment Method",
+    "Amount (€)"
+  ];
+
+  const rows = entries.map(entry => [
+    entry.date,
+    entry.type === "income" ? "Income" : "Expense",
+    entry.category,
+    entry.payment,
+    entry.amount.toFixed(2)
+  ]);
+
+  const csvContent = [header, ...rows]
+    .map(row => row.join(";"))
+    .join("\n");
+
+  // Excel fix for encoding
+  const BOM = "\uFEFF";
+
+  const blob = new Blob([BOM + csvContent], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+
+  // filename με ημερομηνία
+  const today = new Date().toISOString().split("T")[0];
+  link.download = `finance-export-${today}.csv`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
 }
 
 // ===============================
