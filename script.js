@@ -970,3 +970,7 @@ function exportCSV() {
 
 setTodayDate();
 renderAll();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
