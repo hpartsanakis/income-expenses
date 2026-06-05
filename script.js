@@ -67,6 +67,9 @@ const totalCategoriesEl = document.getElementById("total-categories");
 const totalPaymentsEl = document.getElementById("total-payments");
 const budgetUsageEl = document.getElementById("budget-usage");
 
+const exportBackupBtn = document.getElementById("exportBackupBtn");
+const importBackupInput = document.getElementById("importBackupInput");
+
 // ===============================
 // MONTHLY FILTER FUNCTIONS
 // ===============================
@@ -410,6 +413,74 @@ function renderTotals() {
   balanceEl.textContent = formatMoney(balance);
 }
 
+// ===============================
+// EXPORT BACKUP
+// ===============================
+function exportBackup() {
+  const backupData = {
+    categories: categories,
+    paymentMethods: paymentMethods,
+    entries: entries,
+    budgets: budgets,
+    exportedAt: new Date().toISOString(),
+  };
+
+  const jsonContent = JSON.stringify(backupData, null, 2);
+
+  const blob = new Blob([jsonContent], {
+    type: "application/json",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+
+  const today = new Date().toISOString().split("T")[0];
+  link.download = `finance-backup-${today}.json`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// ===============================
+// IMPORT BACKUP
+// ===============================
+function importBackup(event) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    try {
+      const backupData = JSON.parse(reader.result);
+
+      categories = backupData.categories || [];
+      paymentMethods = backupData.paymentMethods || [];
+      entries = backupData.entries || [];
+      budgets = backupData.budgets || [];
+
+      saveCategories();
+      savePaymentMethods();
+      saveEntries();
+      saveBudgets();
+
+      renderAll();
+
+      alert("Backup erfolgreich importiert.");
+    } catch (error) {
+      alert("Backup konnte nicht importiert werden.");
+      console.error(error);
+    }
+  };
+
+  reader.readAsText(file);
+
+  importBackupInput.value = "";
+}
 // ===============================
 // DASHBOARD KPIs
 // ===============================
@@ -810,6 +881,9 @@ nextMonthBtn.addEventListener("click", function () {
 });
 
 exportCsvBtn.addEventListener("click", exportCSV);
+
+exportBackupBtn.addEventListener("click", exportBackup);
+importBackupInput.addEventListener("change", importBackup);
 
 budgetForm.addEventListener("submit", function (event) {
   event.preventDefault();
