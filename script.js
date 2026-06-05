@@ -5,6 +5,7 @@
 let categories = JSON.parse(localStorage.getItem("categories")) || [];
 let paymentMethods = JSON.parse(localStorage.getItem("paymentMethods")) || [];
 let entries = JSON.parse(localStorage.getItem("entries")) || [];
+let budgets = JSON.parse(localStorage.getItem("budgets")) || [];
 
 // ===============================
 // DOM ELEMENTS
@@ -53,6 +54,11 @@ let categoryChart = null;
 let paymentChart = null;
 
 let editingEntryId = null;
+
+const budgetForm = document.getElementById("budget-form");
+const budgetCategorySelect = document.getElementById("budget-category-select");
+const budgetAmountInput = document.getElementById("budget-amount-input");
+const budgetList = document.getElementById("budget-list");
 
 // ===============================
 // MONTHLY FILTER FUNCTIONS
@@ -184,6 +190,10 @@ function savePaymentMethods() {
 
 function saveEntries() {
   localStorage.setItem("entries", JSON.stringify(entries));
+}
+
+function saveBudgets() {
+  localStorage.setItem("budgets", JSON.stringify(budgets));
 }
 
 // ===============================
@@ -492,17 +502,97 @@ function renderCategoryTotals() {
 }
 
 // ===============================
+// RENDER BUDGET CATEGORY SELECT
+// ===============================
+function renderBudgetCategorySelect() {
+  budgetCategorySelect.innerHTML =
+    '<option value="">Kategorie auswählen</option>';
+
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.name;
+    option.textContent = category.name;
+    budgetCategorySelect.appendChild(option);
+  });
+}
+
+// ===============================
+// RENDER BUDGETS
+// ===============================
+
+function renderBudgets() {
+  budgetList.innerHTML = "";
+
+  if (budgets.length === 0) {
+    budgetList.innerHTML = "<li>Keine Budgets vorhanden.</li>";
+    return;
+  }
+
+  budgets.forEach((budget) => {
+    const spent = entries
+      .filter(
+        (entry) =>
+          entry.category === budget.category && entry.type === "expense",
+      )
+      .reduce((sum, entry) => sum + Number(entry.amount), 0);
+
+    const remaining = Number(budget.amount) - spent;
+    const percent = Math.min((spent / Number(budget.amount)) * 100, 100);
+
+    const status =
+      remaining >= 0
+        ? `Noch frei: ${formatMoney(remaining)}`
+        : `Überschritten: ${formatMoney(Math.abs(remaining))}`;
+
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      <div style="width: 100%">
+        <div class="analytics-row">
+          <span>${budget.category}</span>
+          <span>${formatMoney(spent)} / ${formatMoney(Number(budget.amount))}</span>
+        </div>
+
+        <div class="analytics-bar">
+          <div class="analytics-fill" style="width: ${percent}%"></div>
+        </div>
+
+        <small>${status}</small>
+      </div>
+
+      <button class="delete-btn" onclick="deleteBudget('${budget.category}')">
+        🗑
+      </button>
+    `;
+
+    budgetList.appendChild(li);
+  });
+}
+
+// ===============================
+// DELETE BUDGET
+// ===============================
+function deleteBudget(categoryName) {
+  budgets = budgets.filter((budget) => budget.category !== categoryName);
+
+  saveBudgets();
+  renderAll();
+}
+
+// ===============================
 // RENDER ALL
 // ===============================
 
 function renderAll() {
   renderCategories();
   renderPaymentMethods();
+  renderBudgetCategorySelect();
   renderEntries();
   renderTotals();
   renderPaymentTotals();
   renderCategoryTotals();
   renderMonthlyOverview();
+  renderBudgets();
   renderCharts();
 }
 
@@ -666,6 +756,38 @@ nextMonthBtn.addEventListener("click", function () {
 });
 
 exportCsvBtn.addEventListener("click", exportCSV);
+
+budgetForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const category = budgetCategorySelect.value;
+  const amount = Number(budgetAmountInput.value);
+
+  if (!category || amount <= 0) {
+    alert("Bitte Kategorie und Budget eingeben.");
+    return;
+  }
+
+  const existingBudget = budgets.find(
+    (budget) => budget.category === category,
+  );
+
+  if (existingBudget) {
+    existingBudget.amount = amount;
+  } else {
+    budgets.push({
+      category: category,
+      amount: amount,
+    });
+  }
+
+  saveBudgets();
+
+  budgetForm.reset();
+
+  renderAll();
+});
+
 // ===============================
 // AUTO DATE
 // ===============================

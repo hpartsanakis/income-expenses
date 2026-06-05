@@ -391,6 +391,19 @@ canvas {
 }
 
 /* ===============================
+   BUDGETS
+================================ */
+#budget-list li {
+  align-items: stretch;
+}
+
+#budget-list small {
+  display: block;
+  margin-top: 8px;
+  color: #d1d5db;
+}
+
+/* ===============================
    RESPONSIVE
 ================================ */
 
