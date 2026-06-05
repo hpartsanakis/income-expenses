@@ -258,6 +258,24 @@ button:hover {
 }
 
 /* ===============================
+   CHARTS
+================================ */
+.chart-card,
+.export-card {
+  background: #1f2937;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+canvas {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+/* ===============================
    ENTRIES
 ================================ */
 

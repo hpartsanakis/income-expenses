@@ -43,9 +43,14 @@ const monthlyIncomeEl = document.getElementById("monthly-income");
 const monthlyExpensesEl = document.getElementById("monthly-expenses");
 const monthlyBalanceEl = document.getElementById("monthly-balance");
 
-const exportCsvBtn = document.getElementById("export-csv");
-
 let currentMonthDate = new Date();
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+
+const categoryChartCanvas = document.getElementById("categoryChart");
+const paymentChartCanvas = document.getElementById("paymentChart");
+
+let categoryChart = null;
+let paymentChart = null;
 
 // ===============================
 // MONTHLY FILTER FUNCTIONS
@@ -79,6 +84,88 @@ function renderMonthlyOverview() {
   monthlyIncomeEl.textContent = formatMoney(monthlyIncome);
   monthlyExpensesEl.textContent = formatMoney(monthlyExpenses);
   monthlyBalanceEl.textContent = formatMoney(monthlyBalance);
+}
+
+// ===============================
+// CHARTS
+// ===============================
+
+function renderCharts() {
+  // Prüfen, ob Chart.js geladen ist
+  if (typeof Chart === "undefined") {
+    console.log("Chart.js ist nicht geladen.");
+    return;
+  }
+
+  // Canvas Elemente holen
+  const categoryCanvas = document.getElementById("categoryChart");
+  const paymentCanvas = document.getElementById("paymentChart");
+
+  if (!categoryCanvas || !paymentCanvas) {
+    console.log("Chart Canvas fehlt im HTML.");
+    return;
+  }
+
+  // Alte Charts löschen
+  if (categoryChart) {
+    categoryChart.destroy();
+  }
+
+  if (paymentChart) {
+    paymentChart.destroy();
+  }
+
+  // Kategorien: nur Ausgaben berechnen
+  const categoryLabels = categories.map((category) => category.name);
+
+  const categoryData = categories.map((category) => {
+    return entries
+      .filter(
+        (entry) => entry.category === category.name && entry.type === "expense",
+      )
+      .reduce((sum, entry) => sum + Number(entry.amount), 0);
+  });
+
+  // Zahlungsmittel: Einnahmen minus Ausgaben berechnen
+  const paymentLabels = paymentMethods.map((method) => method.name);
+
+  const paymentData = paymentMethods.map((method) => {
+    return entries
+      .filter((entry) => entry.payment === method.name)
+      .reduce((sum, entry) => {
+        return entry.type === "income"
+          ? sum + Number(entry.amount)
+          : sum - Number(entry.amount);
+      }, 0);
+  });
+
+  // Kategorie Chart zeichnen
+  categoryChart = new Chart(categoryCanvas, {
+    type: "bar",
+    data: {
+      labels: categoryLabels,
+      datasets: [
+        {
+          label: "Ausgaben nach Kategorie",
+          data: categoryData,
+        },
+      ],
+    },
+  });
+
+  // Zahlungsmittel Chart zeichnen
+  paymentChart = new Chart(paymentCanvas, {
+    type: "bar",
+    data: {
+      labels: paymentLabels,
+      datasets: [
+        {
+          label: "Gesamt nach Zahlungsmittel",
+          data: paymentData,
+        },
+      ],
+    },
+  });
 }
 
 // ===============================
@@ -335,6 +422,7 @@ function renderAll() {
   renderPaymentTotals();
   renderCategoryTotals();
   renderMonthlyOverview();
+  renderCharts();
 }
 
 // ===============================
@@ -489,31 +577,23 @@ function exportCSV() {
     return;
   }
 
-  const header = [
-    "Date",
-    "Type",
-    "Category",
-    "Payment Method",
-    "Amount (€)"
-  ];
+  const header = ["Date", "Type", "Category", "Payment Method", "Amount (€)"];
 
-  const rows = entries.map(entry => [
+  const rows = entries.map((entry) => [
     entry.date,
     entry.type === "income" ? "Income" : "Expense",
     entry.category,
     entry.payment,
-    entry.amount.toFixed(2)
+    entry.amount.toFixed(2),
   ]);
 
-  const csvContent = [header, ...rows]
-    .map(row => row.join(";"))
-    .join("\n");
+  const csvContent = [header, ...rows].map((row) => row.join(";")).join("\n");
 
   // Excel fix for encoding
   const BOM = "\uFEFF";
 
   const blob = new Blob([BOM + csvContent], {
-    type: "text/csv;charset=utf-8;"
+    type: "text/csv;charset=utf-8;",
   });
 
   const url = URL.createObjectURL(blob);

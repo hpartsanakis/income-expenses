@@ -3,10 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Income & Expenses App</title>
-
     <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
   <body>
@@ -160,7 +159,18 @@
         </div>
       </section>
 
-      <button id="export-csv" class="export-btn">Export CSV</button>
+      <!-- CHARTS -->
+      <section class="chart-card">
+        <h2>Charts</h2>
+
+        <canvas id="categoryChart"></canvas>
+        <canvas id="paymentChart"></canvas>
+      </section>
+
+      <section class="export-card">
+        <h2>Export</h2>
+        <button id="exportCsvBtn">CSV Export</button>
+      </section>
 
       <!-- ENTRIES -->
       <section class="card">
