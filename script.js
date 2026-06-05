@@ -52,6 +52,8 @@ const paymentChartCanvas = document.getElementById("paymentChart");
 let categoryChart = null;
 let paymentChart = null;
 
+let editingEntryId = null;
+
 // ===============================
 // MONTHLY FILTER FUNCTIONS
 // ===============================
@@ -202,7 +204,17 @@ function renderCategories() {
 
   categories.forEach((category) => {
     const li = document.createElement("li");
-    li.textContent = category.name;
+    li.innerHTML = `
+      <span>${category.name}</span>
+
+      <button
+        class="delete-btn"
+        onclick="deleteCategory(${category.id})"
+      >
+        🗑
+      </button>
+    `;
+
     categoryList.appendChild(li);
 
     const option = document.createElement("option");
@@ -210,6 +222,28 @@ function renderCategories() {
     option.textContent = category.name;
     categorySelect.appendChild(option);
   });
+}
+
+// ===============================
+// DELETE CATEGORY
+// ===============================
+
+function deleteCategory(id) {
+  const category = categories.find((item) => String(item.id) === String(id));
+
+  if (!category) return;
+
+  const isUsed = entries.some((entry) => entry.category === category.name);
+
+  if (isUsed) {
+    alert("Kategorie wird verwendet und kann nicht gelöscht werden.");
+    return;
+  }
+
+  categories = categories.filter((item) => String(item.id) !== String(id));
+
+  saveCategories();
+  renderAll();
 }
 
 // ===============================
@@ -224,7 +258,16 @@ function renderPaymentMethods() {
 
   paymentMethods.forEach((payment) => {
     const li = document.createElement("li");
-    li.textContent = payment.name;
+    li.innerHTML = `
+  <span>${payment.name}</span>
+
+  <button
+    class="delete-btn"
+    onclick="deletePaymentMethod(${payment.id})"
+  >
+    🗑
+  </button>
+`;
     paymentList.appendChild(li);
 
     const option = document.createElement("option");
@@ -240,6 +283,30 @@ function renderPaymentMethods() {
 }
 
 // ===============================
+// DELETE PAYMENT METHOD
+// ===============================
+
+function deletePaymentMethod(id) {
+  const payment = paymentMethods.find((item) => String(item.id) === String(id));
+
+  if (!payment) return;
+
+  const isUsed = entries.some((entry) => entry.payment === payment.name);
+
+  if (isUsed) {
+    alert("Zahlungsmittel wird verwendet und kann nicht gelöscht werden.");
+    return;
+  }
+
+  paymentMethods = paymentMethods.filter(
+    (item) => String(item.id) !== String(id),
+  );
+
+  savePaymentMethods();
+  renderAll();
+}
+
+// ===============================
 // RENDER ENTRIES
 // ===============================
 
@@ -251,45 +318,59 @@ function renderEntries() {
 
   let filteredEntries = entries;
 
+  // Nach Zahlungsmittel filtern
   if (selectedPayment !== "all") {
     filteredEntries = filteredEntries.filter(
       (entry) => entry.payment === selectedPayment,
     );
   }
 
+  // Nach Typ filtern: income / expense
   if (selectedType !== "all") {
     filteredEntries = filteredEntries.filter(
       (entry) => entry.type === selectedType,
     );
   }
 
+  // Wenn keine Einträge vorhanden sind
   if (filteredEntries.length === 0) {
     entriesList.innerHTML = "<li>Keine Einträge vorhanden.</li>";
     return;
   }
 
-  filteredEntries.forEach((entry) => {
-    const li = document.createElement("li");
+  // Neueste Einträge zuerst anzeigen
+  filteredEntries
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .forEach((entry) => {
+      const li = document.createElement("li");
 
-    li.className =
-      entry.type === "income"
-        ? "entry-item entry-income"
-        : "entry-item entry-expense";
+      li.className =
+        entry.type === "income"
+          ? "entry-item entry-income"
+          : "entry-item entry-expense";
 
-    li.innerHTML = `
-      <span>${entry.date}</span>
-      <span>${entry.category}</span>
-      <span>${entry.payment}</span>
-      <strong>${entry.type === "income" ? "+" : "-"} ${formatMoney(entry.amount)}</strong>
+      li.innerHTML = `
+        <span>${entry.date}</span>
+        <span>${entry.category}</span>
+        <span>${entry.payment}</span>
 
-      <div>
-        <button onclick="editEntry(${entry.id})">✏️</button>
-        <button class="delete-btn" onclick="deleteEntry(${entry.id})">🗑</button>
-      </div>
-    `;
+        <strong>
+          ${entry.type === "income" ? "+" : "-"} ${formatMoney(entry.amount)}
+        </strong>
 
-    entriesList.appendChild(li);
-  });
+        <div class="entry-actions">
+          <button class="edit-btn" onclick="editEntry('${entry.id}')">
+            ✏️
+          </button>
+
+          <button class="delete-btn" onclick="deleteEntry('${entry.id}')">
+            🗑
+          </button>
+        </div>
+      `;
+
+      entriesList.appendChild(li);
+    });
 }
 
 // ===============================
@@ -474,7 +555,7 @@ paymentForm.addEventListener("submit", function (event) {
 });
 
 // ===============================
-// ADD ENTRY
+// ADD / EDIT ENTRY
 // ===============================
 
 entryForm.addEventListener("submit", function (event) {
@@ -488,16 +569,41 @@ entryForm.addEventListener("submit", function (event) {
 
   if (!amount || !category || !payment || !date) return;
 
-  const newEntry = {
-    id: Date.now(),
-    amount: amount,
-    type: type,
-    category: category,
-    payment: payment,
-    date: date,
-  };
+  // EDIT MODE
+  if (editingEntryId !== null) {
+    entries = entries.map((entry) => {
+      if (String(entry.id) === String(editingEntryId)) {
+        return {
+          ...entry,
+          amount: amount,
+          type: type,
+          category: category,
+          payment: payment,
+          date: date,
+        };
+      }
 
-  entries.push(newEntry);
+      return entry;
+    });
+
+    editingEntryId = null;
+    entryForm.querySelector("button").textContent = "Eintrag speichern";
+  }
+
+  // NEW ENTRY MODE
+  else {
+    const newEntry = {
+      id: Date.now(),
+      amount: amount,
+      type: type,
+      category: category,
+      payment: payment,
+      date: date,
+    };
+
+    entries.push(newEntry);
+  }
+
   saveEntries();
 
   entryForm.reset();
@@ -511,7 +617,7 @@ entryForm.addEventListener("submit", function (event) {
 // ===============================
 
 function deleteEntry(id) {
-  entries = entries.filter((entry) => entry.id !== id);
+  entries = entries.filter((entry) => String(entry.id) !== String(id));
 
   saveEntries();
   renderAll();
@@ -522,7 +628,7 @@ function deleteEntry(id) {
 // ===============================
 
 function editEntry(id) {
-  const entry = entries.find((entry) => entry.id === id);
+  const entry = entries.find((entry) => String(entry.id) === String(id));
 
   if (!entry) return;
 
@@ -532,7 +638,7 @@ function editEntry(id) {
   paymentSelect.value = entry.payment;
   dateInput.value = entry.date;
 
-  entries = entries.filter((entry) => entry.id !== id);
+  entries = entries.filter((entry) => String(entry.id) !== String(id));
 
   saveEntries();
   renderAll();
