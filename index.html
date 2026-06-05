@@ -3,21 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Income & Expenses App</title>
+
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css" />
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#111827" />
   </head>
 
   <body>
     <div class="app">
+      <!-- =============================== -->
+      <!-- HEADER -->
+      <!-- =============================== -->
       <header class="app-header">
         <h1>Income & Expenses App</h1>
         <p>Verwalte Einnahmen, Ausgaben, Kategorien und Zahlungsmittel.</p>
       </header>
 
-      <!-- SUMMARY CARDS -->
+      <!-- =============================== -->
+      <!-- SUMMARY -->
+      <!-- =============================== -->
       <section class="summary-grid">
         <div class="summary-card income">
           <h3>Einnahmen</h3>
@@ -35,6 +47,81 @@
         </div>
       </section>
 
+      <!-- =============================== -->
+      <!-- NEW ENTRY -->
+      <!-- =============================== -->
+      <section class="card">
+        <h2>Neuer Eintrag</h2>
+
+        <form id="entry-form" class="entry-form">
+          <input
+            type="number"
+            id="amount-input"
+            placeholder="Betrag"
+            step="0.01"
+            required
+          />
+
+          <select id="type-input" required>
+            <option value="income">Einnahme</option>
+            <option value="expense">Ausgabe</option>
+          </select>
+
+          <select id="category-select" required>
+            <option value="">Kategorie auswählen</option>
+          </select>
+
+          <select id="payment-select" required>
+            <option value="">Zahlungsmittel auswählen</option>
+          </select>
+
+          <input type="date" id="date-input" required />
+
+          <button type="submit">Eintrag speichern</button>
+        </form>
+      </section>
+
+      <!-- =============================== -->
+      <!-- ENTRIES -->
+      <!-- =============================== -->
+      <section class="card">
+        <h2>Einträge</h2>
+        <ul id="entries-list" class="entries-list"></ul>
+      </section>
+
+      <!-- =============================== -->
+      <!-- MONTHLY OVERVIEW -->
+      <!-- =============================== -->
+      <section class="card monthly-card">
+        <h2>Monatsübersicht</h2>
+
+        <div class="monthly-header">
+          <button id="prev-month">←</button>
+          <h3 id="month-title">Monat</h3>
+          <button id="next-month">→</button>
+        </div>
+
+        <div class="monthly-grid">
+          <div>
+            <span>Einnahmen</span>
+            <strong id="monthly-income">0.00 €</strong>
+          </div>
+
+          <div>
+            <span>Ausgaben</span>
+            <strong id="monthly-expenses">0.00 €</strong>
+          </div>
+
+          <div>
+            <span>Balance</span>
+            <strong id="monthly-balance">0.00 €</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================== -->
+      <!-- DASHBOARD KPIs -->
+      <!-- =============================== -->
       <section class="kpi-card">
         <h2>Dashboard KPIs</h2>
 
@@ -71,35 +158,53 @@
         </div>
       </section>
 
-      <!-- MONTHLY OVERVIEW -->
-      <section class="card monthly-card">
-        <h2>Monatsübersicht</h2>
+      <!-- =============================== -->
+      <!-- FILTER -->
+      <!-- =============================== -->
+      <section class="card">
+        <h2>Auswertung filtern</h2>
 
-        <div class="monthly-header">
-          <button id="prev-month">←</button>
-          <h3 id="month-title">Monat</h3>
-          <button id="next-month">→</button>
-        </div>
+        <div class="filter-grid">
+          <select id="filter-payment">
+            <option value="all">Alle Zahlungsmittel</option>
+          </select>
 
-        <div class="monthly-grid">
-          <div>
-            <span>Einnahmen</span>
-            <strong id="monthly-income">0.00 €</strong>
-          </div>
-
-          <div>
-            <span>Ausgaben</span>
-            <strong id="monthly-expenses">0.00 €</strong>
-          </div>
-
-          <div>
-            <span>Balance</span>
-            <strong id="monthly-balance">0.00 €</strong>
-          </div>
+          <select id="filter-type">
+            <option value="all">Alle Typen</option>
+            <option value="income">Nur Einnahmen</option>
+            <option value="expense">Nur Ausgaben</option>
+          </select>
         </div>
       </section>
 
+      <!-- =============================== -->
+      <!-- ANALYTICS -->
+      <!-- =============================== -->
+      <section class="analytics-grid">
+        <div class="card">
+          <h2>Auswertung nach Zahlungsmittel</h2>
+          <div id="payment-analytics" class="analytics-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Ausgaben nach Kategorie</h2>
+          <div id="category-analytics" class="analytics-list"></div>
+        </div>
+      </section>
+
+      <!-- =============================== -->
+      <!-- CHARTS -->
+      <!-- =============================== -->
+      <section class="chart-card">
+        <h2>Charts</h2>
+
+        <canvas id="categoryChart"></canvas>
+        <canvas id="paymentChart"></canvas>
+      </section>
+
+      <!-- =============================== -->
       <!-- CATEGORY MANAGEMENT -->
+      <!-- =============================== -->
       <section class="card">
         <h2>Kategorien Verwaltung</h2>
 
@@ -117,7 +222,9 @@
         <ul id="category-list" class="tag-list"></ul>
       </section>
 
+      <!-- =============================== -->
       <!-- PAYMENT METHOD MANAGEMENT -->
+      <!-- =============================== -->
       <section class="card">
         <h2>Zahlungsmittel Verwaltung</h2>
 
@@ -135,68 +242,9 @@
         <ul id="payment-list" class="tag-list"></ul>
       </section>
 
-      <!-- NEW ENTRY -->
-      <section class="card">
-        <h2>Neuer Eintrag</h2>
-
-        <form id="entry-form" class="entry-form">
-          <input
-            type="number"
-            id="amount-input"
-            placeholder="Betrag"
-            step="0.01"
-            required
-          />
-
-          <select id="type-input" required>
-            <option value="income">Einnahme</option>
-            <option value="expense">Ausgabe</option>
-          </select>
-
-          <select id="category-select" required>
-            <option value="">Kategorie auswählen</option>
-          </select>
-
-          <select id="payment-select" required>
-            <option value="">Zahlungsmittel auswählen</option>
-          </select>
-
-          <input type="date" id="date-input" required />
-
-          <button type="submit">Eintrag speichern</button>
-        </form>
-      </section>
-
-      <!-- FILTER -->
-      <section class="card">
-        <h2>Auswertung</h2>
-
-        <div class="filter-grid">
-          <select id="filter-payment">
-            <option value="all">Alle Zahlungsmittel</option>
-          </select>
-
-          <select id="filter-type">
-            <option value="all">Alle Typen</option>
-            <option value="income">Nur Einnahmen</option>
-            <option value="expense">Nur Ausgaben</option>
-          </select>
-        </div>
-      </section>
-
-      <!-- ANALYSIS -->
-      <section class="analytics-grid">
-        <div class="card">
-          <h2>Auswertung nach Zahlungsmittel</h2>
-          <div id="payment-analytics" class="analytics-list"></div>
-        </div>
-
-        <div class="card">
-          <h2>Ausgaben nach Kategorie</h2>
-          <div id="category-analytics" class="analytics-list"></div>
-        </div>
-      </section>
-
+      <!-- =============================== -->
+      <!-- BUDGET -->
+      <!-- =============================== -->
       <section class="card">
         <h2>Budget pro Kategorie</h2>
 
@@ -218,20 +266,17 @@
         <ul id="budget-list"></ul>
       </section>
 
-      <!-- CHARTS -->
-      <section class="chart-card">
-        <h2>Charts</h2>
-
-        <canvas id="categoryChart"></canvas>
-        <canvas id="paymentChart"></canvas>
-      </section>
-
+      <!-- =============================== -->
+      <!-- EXPORT -->
+      <!-- =============================== -->
       <section class="export-card">
         <h2>Export</h2>
         <button id="exportCsvBtn">CSV Export</button>
       </section>
 
+      <!-- =============================== -->
       <!-- BACKUP & RESTORE -->
+      <!-- =============================== -->
       <section class="card">
         <h2>Backup & Restore</h2>
 
@@ -239,15 +284,9 @@
 
         <input id="importBackupInput" type="file" accept="application/json" />
       </section>
-
-      <!-- ENTRIES -->
-      <section class="card">
-        <h2>Einträge</h2>
-
-        <ul id="entries-list" class="entries-list"></ul>
-      </section>
     </div>
 
+    <!-- JavaScript -->
     <script src="script.js"></script>
   </body>
 </html>
