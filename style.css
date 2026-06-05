@@ -404,6 +404,39 @@ canvas {
 }
 
 /* ===============================
+   KPIs
+================================ */
+.kpi-card {
+  background: #1f2937;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.kpi-box {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.kpi-box span {
+  display: block;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.kpi-box strong {
+  font-size: 20px;
+}
+
+/* ===============================
    RESPONSIVE
 ================================ */
 

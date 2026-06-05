@@ -60,6 +60,13 @@ const budgetCategorySelect = document.getElementById("budget-category-select");
 const budgetAmountInput = document.getElementById("budget-amount-input");
 const budgetList = document.getElementById("budget-list");
 
+const totalBookingsEl = document.getElementById("total-bookings");
+const largestExpenseEl = document.getElementById("largest-expense");
+const largestIncomeEl = document.getElementById("largest-income");
+const totalCategoriesEl = document.getElementById("total-categories");
+const totalPaymentsEl = document.getElementById("total-payments");
+const budgetUsageEl = document.getElementById("budget-usage");
+
 // ===============================
 // MONTHLY FILTER FUNCTIONS
 // ===============================
@@ -404,6 +411,48 @@ function renderTotals() {
 }
 
 // ===============================
+// DASHBOARD KPIs
+// ===============================
+
+function renderKPIs() {
+  totalBookingsEl.textContent = entries.length;
+
+  const expenses = entries.filter((entry) => entry.type === "expense");
+
+  const incomes = entries.filter((entry) => entry.type === "income");
+
+  const largestExpense =
+    expenses.length > 0
+      ? Math.max(...expenses.map((entry) => Number(entry.amount)))
+      : 0;
+
+  const largestIncome =
+    incomes.length > 0
+      ? Math.max(...incomes.map((entry) => Number(entry.amount)))
+      : 0;
+
+  largestExpenseEl.textContent = formatMoney(largestExpense);
+  largestIncomeEl.textContent = formatMoney(largestIncome);
+
+  totalCategoriesEl.textContent = categories.length;
+  totalPaymentsEl.textContent = paymentMethods.length;
+
+  const totalBudget = budgets.reduce(
+    (sum, budget) => sum + Number(budget.amount),
+    0,
+  );
+
+  const spentBudget = entries
+    .filter((entry) => entry.type === "expense")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
+
+  const budgetPercent =
+    totalBudget > 0 ? ((spentBudget / totalBudget) * 100).toFixed(1) : 0;
+
+  budgetUsageEl.textContent = `${budgetPercent}%`;
+}
+
+// ===============================
 // PAYMENT TOTALS
 // ===============================
 
@@ -587,12 +636,17 @@ function renderAll() {
   renderCategories();
   renderPaymentMethods();
   renderBudgetCategorySelect();
+
   renderEntries();
   renderTotals();
+  renderKPIs();
+
   renderPaymentTotals();
   renderCategoryTotals();
+
   renderMonthlyOverview();
   renderBudgets();
+
   renderCharts();
 }
 
@@ -768,9 +822,7 @@ budgetForm.addEventListener("submit", function (event) {
     return;
   }
 
-  const existingBudget = budgets.find(
-    (budget) => budget.category === category,
-  );
+  const existingBudget = budgets.find((budget) => budget.category === category);
 
   if (existingBudget) {
     existingBudget.amount = amount;
